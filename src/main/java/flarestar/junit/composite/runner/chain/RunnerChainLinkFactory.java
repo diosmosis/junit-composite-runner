@@ -3,19 +3,48 @@ package flarestar.junit.composite.runner.chain;
 import flarestar.junit.composite.runner.CompositeRunner;
 import javassist.*;
 import org.junit.internal.runners.model.ReflectiveCallable;
+import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.ParentRunner;
 import org.junit.runners.model.Statement;
 
 import java.lang.reflect.Method;
+import java.lang.reflect.ParameterizedType;
+import java.util.List;
 
 /**
  * TODO
  */
 public class RunnerChainLinkFactory {
     public ParentRunner<?> makeLink(Class<? extends ParentRunner<?>> runnerClass, final Class<?> testClass,
-                                    final CompositeRunner compositeRunner, final ParentRunner<?> nextRunner) {
+                                    final CompositeRunner compositeRunner, final ParentRunner<?> nextRunner,
+                                    boolean isTestStructureProvider) {
         ClassPool pool = ClassPool.getDefault();
+
+        String newClassName = runnerClass.getName() + (isTestStructureProvider ? "TestStructureProvider" : "ChainLink");
+        final Class<?> newRunnerCtClass = makeLinkClass(pool, newClassName, runnerClass, isTestStructureProvider);
+
+        try {
+            return (ParentRunner<?>) new ReflectiveCallable() {
+                @Override
+                protected Object runReflectiveCall() throws Throwable {
+                    return newRunnerCtClass.getConstructor(Class.class, CompositeRunner.class, ParentRunner.class)
+                        .newInstance(testClass, compositeRunner, nextRunner);
+                }
+            }.run();
+        } catch (Throwable throwable) {
+            throw new RuntimeException(throwable);
+        }
+    }
+
+    private Class<?> makeLinkClass(ClassPool pool, String newClassName, Class<? extends ParentRunner<?>> runnerClass,
+                                   boolean isTestStructureProvider) {
+        // if the class already exists, don't try to create it again
+        try {
+            return Class.forName(newClassName);
+        } catch (ClassNotFoundException e) {
+            // ignore
+        }
 
         CtClass runnerCtClass;
         try {
@@ -24,56 +53,44 @@ public class RunnerChainLinkFactory {
             throw new RuntimeException(e); // should never happen
         }
 
-        CtClass newRunnerCtClass = pool.makeClass(runnerClass.getName() + "ChainLink", runnerCtClass);
+        CtClass newRunnerCtClass = pool.makeClass(newClassName, runnerCtClass);
 
         try {
             newRunnerCtClass.addField(makeNextRunnerField(newRunnerCtClass));
-        } catch (CannotCompileException e) {
-            throw new RuntimeException(e);
-        }
-
-        try {
             newRunnerCtClass.addField(makeFirstRunnerField(newRunnerCtClass));
-        } catch (CannotCompileException e) {
-            throw new RuntimeException(e);
-        }
-
-        try {
             newRunnerCtClass.addConstructor(makeNewClassConstructor(newRunnerCtClass));
-        } catch (CannotCompileException e) {
-            throw new RuntimeException(e); // should never happen
-        }
-
-        try {
             newRunnerCtClass.addMethod(makeChildrenInvokerMethod(newRunnerCtClass));
-        } catch (CannotCompileException e) {
-            throw new RuntimeException(e); // should never happen
-        }
-
-        try {
             newRunnerCtClass.addMethod(makeRunChildMethod(newRunnerCtClass));
+            if (!isTestStructureProvider) {
+                newRunnerCtClass.addMethod(makeGetChildrenMethod(newRunnerCtClass));
+                newRunnerCtClass.addMethod(makeDescribeChildMethod(runnerClass, newRunnerCtClass));
+            }
+            return newRunnerCtClass.toClass();
         } catch (CannotCompileException e) {
             throw new RuntimeException(e); // should never happen
         }
+    }
 
-        final Class createdJavaClass;
-        try {
-            createdJavaClass = newRunnerCtClass.toClass();
-        } catch (CannotCompileException e) {
-            throw new RuntimeException(e); // should never happen
-        }
+    private CtMethod makeDescribeChildMethod(Class<?> runnerClass, CtClass declaringClass) throws CannotCompileException {
+        String parameterType = getDescribeChildParameterType(runnerClass).getName();
 
-        try {
-            return (ParentRunner<?>) new ReflectiveCallable() {
-                @Override
-                protected Object runReflectiveCall() throws Throwable {
-                    return createdJavaClass.getConstructor(Class.class, CompositeRunner.class, ParentRunner.class)
-                        .newInstance(testClass, compositeRunner, nextRunner);
-                }
-            }.run();
-        } catch (Throwable throwable) {
-            throw new RuntimeException(throwable);
-        }
+        String describeChild =
+            "protected org.junit.runner.Description describeChild(" + parameterType + " child) {\n" +
+            "    return flarestar.junit.composite.runner.chain.RunnerChainLinkFactory.invokeDescribeChild(compositeRunner.getStructureProvidingRunner(), child);\n" +
+            "}";
+        return CtNewMethod.make(describeChild, declaringClass);
+    }
+
+    private Class<?> getDescribeChildParameterType(Class<?> runnerClass) {
+        return (Class<?>) ((ParameterizedType)runnerClass.getGenericSuperclass()).getActualTypeArguments()[0];
+    }
+
+    private CtMethod makeGetChildrenMethod(CtClass declaringClass) throws CannotCompileException {
+        String getChildren =
+            "protected java.util.List getChildren() {\n" +
+            "    return flarestar.junit.composite.runner.chain.RunnerChainLinkFactory.invokeGetChildren(compositeRunner.getStructureProvidingRunner());\n" +
+            "}";
+        return CtNewMethod.make(getChildren, declaringClass);
     }
 
     private CtField makeNextRunnerField(CtClass declaringClass) throws CannotCompileException {
@@ -119,13 +136,48 @@ public class RunnerChainLinkFactory {
     }
 
     // utility methods
-    public static Statement invokeClassBlock(ParentRunner<?> nextRunner, RunNotifier notifier) {
+    public static Statement invokeClassBlock(final ParentRunner<?> nextRunner, final RunNotifier notifier) {
         try {
-            Method classBlockMethod = ParentRunner.class.getDeclaredMethod("classBlock", RunNotifier.class);
-            classBlockMethod.setAccessible(true);
-            return (Statement)classBlockMethod.invoke(nextRunner, notifier);
-        } catch (ReflectiveOperationException e) {
-            throw new RuntimeException(e); // should never happen
+            return (Statement)new ReflectiveCallable() {
+                @Override
+                protected Object runReflectiveCall() throws Throwable {
+                    Method classBlockMethod = ParentRunner.class.getDeclaredMethod("classBlock", RunNotifier.class);
+                    classBlockMethod.setAccessible(true);
+                    return classBlockMethod.invoke(nextRunner, notifier);
+                }
+            }.run();
+        } catch (Throwable throwable) {
+            throw new RuntimeException(throwable);
+        }
+    }
+
+    public static List invokeGetChildren(final ParentRunner<?> runner) {
+        try {
+            return (List)new ReflectiveCallable() {
+                @Override
+                protected Object runReflectiveCall() throws Throwable {
+                    Method getChildrenMethod = ParentRunner.class.getDeclaredMethod("getChildren");
+                    getChildrenMethod.setAccessible(true);
+                    return getChildrenMethod.invoke(runner);
+                }
+            }.run();
+        } catch (Throwable throwable) {
+            throw new RuntimeException(throwable);
+        }
+    }
+
+    public static Description invokeDescribeChild(final ParentRunner<?> runner, final Object child) {
+        try {
+            return (Description) new ReflectiveCallable() {
+                @Override
+                protected Object runReflectiveCall() throws Throwable {
+                    Method describeChildMethod = ParentRunner.class.getDeclaredMethod("describeChild", Object.class);
+                    describeChildMethod.setAccessible(true);
+                    return describeChildMethod.invoke(runner, child);
+                }
+            }.run();
+        } catch (Throwable throwable) {
+            throw new RuntimeException(throwable);
         }
     }
 }

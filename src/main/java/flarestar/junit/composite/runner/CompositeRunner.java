@@ -99,20 +99,21 @@ public class CompositeRunner extends Runner {
 
     private List<ParentRunner<?>> createRunnerChain(List<Class<? extends ParentRunner<?>>> runnerClasses) {
         List<ParentRunner<?>> runners = new ArrayList<ParentRunner<?>>(runnerClasses.size());
-        createRunnerChainLink(runners, runnerClasses.iterator());
+        createRunnerChainLink(runners, runnerClasses.iterator(), true);
         return runners;
     }
 
     private ParentRunner<?> createRunnerChainLink(List<ParentRunner<?>> runners,
-                                                  Iterator<Class<? extends ParentRunner<?>>> iterator) {
+                                                  Iterator<Class<? extends ParentRunner<?>>> iterator,
+                                                  boolean isTestStructureProvider) {
         Class<? extends ParentRunner<?>> thisRunnerClass = iterator.next();
 
         ParentRunner<?> nextRunner = null;
         if (iterator.hasNext()) {
-            nextRunner = createRunnerChainLink(runners, iterator);
+            nextRunner = createRunnerChainLink(runners, iterator, false);
         }
 
-        ParentRunner<?> runner = factory.makeLink(thisRunnerClass, testClass, this, nextRunner);
+        ParentRunner<?> runner = factory.makeLink(thisRunnerClass, testClass, this, nextRunner, isTestStructureProvider);
         runners.add(0, runner);
         return runner;
     }

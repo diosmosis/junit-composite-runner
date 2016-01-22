@@ -51,10 +51,10 @@ public class CompositeRunnerTest {
         output = output.replaceAll("Time:[^\n]+", "Time:");
 
         Matcher m = Pattern.compile("@([0-9A-Za-z]+)").matcher(output);
-        m.find();
-
-        String firstTestCaseAddress = m.group(1);
-        output = output.replace(firstTestCaseAddress, "<address>");
+        if (m.find()) {
+            String firstTestCaseAddress = m.group(1);
+            output = output.replace(firstTestCaseAddress, "<address>");
+        }
 
         return output;
     }
