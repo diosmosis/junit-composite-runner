@@ -1,0 +1,15 @@
+.in thisBefore with flarestar.junit.composite.test.runners.ExampleTest_$$_javassist_0@<address> [value = 0]
+in thatBefore with flarestar.junit.composite.test.runners.ExampleTest_$$_javassist_0@<address> [value = 1]
+in TestRunner.runChild
+.in testSomethingElse with flarestar.junit.composite.test.runners.ExampleTest_$$_javassist_0@<address> [value = 2]
+in thisAfter with flarestar.junit.composite.test.runners.ExampleTest_$$_javassist_0@<address> [value = 2]
+.in thisBefore with flarestar.junit.composite.test.runners.ExampleTest_$$_javassist_0@<address> [value = 2]
+in thatBefore with flarestar.junit.composite.test.runners.ExampleTest_$$_javassist_0@<address> [value = 3]
+in TestRunner.runChild
+.in testSomething with flarestar.junit.composite.test.runners.ExampleTest_$$_javassist_0@<address> [value = 4]
+in thisAfter with flarestar.junit.composite.test.runners.ExampleTest_$$_javassist_0@<address> [value = 4]
+
+Time:
+
+OK (4 tests)
+
