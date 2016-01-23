@@ -71,7 +71,7 @@ public class RunnerChainLinkFactory {
         }
     }
 
-    private CtMethod makeDescribeChildMethod(Class<?> runnerClass, CtClass declaringClass) throws CannotCompileException {
+    private CtMethod makeDescribeChildMethod(Class<? extends ParentRunner<?>> runnerClass, CtClass declaringClass) throws CannotCompileException {
         String parameterType = getDescribeChildParameterType(runnerClass).getName();
 
         String describeChild =
@@ -81,7 +81,11 @@ public class RunnerChainLinkFactory {
         return CtNewMethod.make(describeChild, declaringClass);
     }
 
-    private Class<?> getDescribeChildParameterType(Class<?> runnerClass) {
+    private Class<?> getDescribeChildParameterType(Class<? extends ParentRunner<?>> runnerClass) {
+        while (runnerClass.getSuperclass() != ParentRunner.class) {
+            runnerClass = (Class<? extends ParentRunner<?>>)runnerClass.getSuperclass();
+        }
+
         return (Class<?>) ((ParameterizedType)runnerClass.getGenericSuperclass()).getActualTypeArguments()[0];
     }
 

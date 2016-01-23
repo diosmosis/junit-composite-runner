@@ -9,7 +9,7 @@ import org.junit.runner.RunWith;
 import org.junit.runners.BlockJUnit4ClassRunner;
 
 @RunWith(CompositeRunner.class)
-@Runners(value = BlockJUnit4ClassRunner.class, others = {TestRunner.class})
+@Runners(value = BlockJUnit4ClassRunner.class, others = {AnotherTestRunner.class, TestRunner.class})
 public class ExampleTest {
     private int value = 0;
 

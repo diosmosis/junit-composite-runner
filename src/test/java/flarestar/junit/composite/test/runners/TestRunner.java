@@ -20,12 +20,12 @@ public class TestRunner extends ParentRunner<FrameworkMethod> {
 
     @Override
     protected List<FrameworkMethod> getChildren() {
-        throw new RuntimeException("getChildren() should not get called!");
+        throw new RuntimeException("TestRunner.getChildren() should not get called!");
     }
 
     @Override
     protected Description describeChild(FrameworkMethod frameworkMethod) {
-        throw new RuntimeException("describeChild() should not get called!");
+        throw new RuntimeException("TestRunner.describeChild() should not get called!");
     }
 
     @Override
