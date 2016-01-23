@@ -8,6 +8,7 @@ import org.junit.runner.Description;
 import org.junit.runner.Runner;
 import org.junit.runner.notification.RunNotifier;
 import org.junit.runners.ParentRunner;
+import org.junit.runners.model.InitializationError;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -55,7 +56,7 @@ public class CompositeRunner extends Runner {
     private final List<ParentRunner<?>> composedRunners;
     private Class<?> testClass;
 
-    public CompositeRunner(Class<?> testClassUnprocessed) {
+    public CompositeRunner(Class<?> testClassUnprocessed) throws InitializationError {
         Runners annotation = testClassUnprocessed.getAnnotation(Runners.class);
         if (annotation == null) {
             throw new IllegalArgumentException(
@@ -97,7 +98,8 @@ public class CompositeRunner extends Runner {
         return result;
     }
 
-    private List<ParentRunner<?>> createRunnerChain(List<Class<? extends ParentRunner<?>>> runnerClasses) {
+    private List<ParentRunner<?>> createRunnerChain(List<Class<? extends ParentRunner<?>>> runnerClasses)
+            throws InitializationError {
         List<ParentRunner<?>> runners = new ArrayList<ParentRunner<?>>(runnerClasses.size());
         createRunnerChainLink(runners, runnerClasses.iterator(), true);
         return runners;
@@ -105,7 +107,7 @@ public class CompositeRunner extends Runner {
 
     private ParentRunner<?> createRunnerChainLink(List<ParentRunner<?>> runners,
                                                   Iterator<Class<? extends ParentRunner<?>>> iterator,
-                                                  boolean isTestStructureProvider) {
+                                                  boolean isTestStructureProvider) throws InitializationError {
         Class<? extends ParentRunner<?>> thisRunnerClass = iterator.next();
 
         ParentRunner<?> nextRunner = null;

@@ -1,5 +1,7 @@
 package flarestar.junit.composite.test.runners;
 
+import flarestar.junit.composite.test.annotations.Dummy;
+import org.junit.Assert;
 import org.junit.internal.runners.model.ReflectiveCallable;
 import org.junit.internal.runners.statements.Fail;
 import org.junit.internal.runners.statements.InvokeMethod;
@@ -13,9 +15,19 @@ import org.junit.runners.model.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
+@Dummy(value = "test value", value2 = 35)
 public class TestRunner extends ParentRunner<FrameworkMethod> {
     protected TestRunner(Class<?> testClass) throws InitializationError {
         super(testClass);
+
+        // make sure the created runner is a javassist runner subclass
+        Assert.assertEquals("TestRunnerChainLink", getClass().getSimpleName());
+
+        // make sure the javassist runner has the @Dummy annotation
+        Dummy dummy = getClass().getAnnotation(Dummy.class);
+        Assert.assertNotNull(dummy);
+        Assert.assertEquals("test value", dummy.value());
+        Assert.assertEquals(35, dummy.value2());
     }
 
     @Override
