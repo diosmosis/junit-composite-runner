@@ -140,11 +140,12 @@ public class RunnerChainLinkFactory extends BaseClassExtender {
     }
 
     private CtConstructor makeNewClassConstructor(CtClass declaringClass) throws CannotCompileException {
-        String constructor = "public CustomRunner(Class testClass, flarestar.junit.composite.runner.CompositeRunner compositeRunner, org.junit.runners.ParentRunner nextRunner) {\n" +
-            "        super(testClass);\n" +
-            "        this.compositeRunner = compositeRunner;\n" +
-            "        this.nextRunner = nextRunner;\n" +
-            "    }";
+        String constructor =
+            "public CustomRunner(Class testClass, flarestar.junit.composite.runner.CompositeRunner compositeRunner, org.junit.runners.ParentRunner nextRunner) {\n" +
+            "    super(testClass);\n" +
+            "    this.compositeRunner = compositeRunner;\n" +
+            "    this.nextRunner = nextRunner;\n" +
+            "}";
         return CtNewConstructor.make(constructor, declaringClass);
     }
 

@@ -45,7 +45,7 @@ public class ExampleTest {
 
     @Test
     public void testAnnotationsRetained() throws Throwable {
-        Class<?> proxyClass = Class.forName(getClass().getName() + "Proxy");
+        Class<?> proxyClass = getClass();
 
         RunWith annotation = proxyClass.getAnnotation(RunWith.class);
         Assert.assertNotNull(annotation);

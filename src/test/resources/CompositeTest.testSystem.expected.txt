@@ -1,29 +1,29 @@
-in thisBefore with flarestar.junit.composite.test.runners.ExampleTest@<address> [value = 0]
-in thatBefore with flarestar.junit.composite.test.runners.ExampleTest@<address> [value = 1]
+in thisBefore with flarestar.junit.composite.test.runners.ExampleTestProxy@<address> [value = 0]
+in thatBefore with flarestar.junit.composite.test.runners.ExampleTestProxy@<address> [value = 1]
 in AnotherTestRunner.runChild
-in thisBefore with flarestar.junit.composite.test.runners.ExampleTest@<address> [value = 2]
-in thatBefore with flarestar.junit.composite.test.runners.ExampleTest@<address> [value = 3]
+in thisBefore with flarestar.junit.composite.test.runners.ExampleTestProxy@<address> [value = 2]
+in thatBefore with flarestar.junit.composite.test.runners.ExampleTestProxy@<address> [value = 3]
 in TestRunner.runChild
-.in testSomethingElse with flarestar.junit.composite.test.runners.ExampleTest@<address> [value = 4]
-in thisAfter with flarestar.junit.composite.test.runners.ExampleTest@<address> [value = 4]
-in thisAfter with flarestar.junit.composite.test.runners.ExampleTest@<address> [value = 4]
-in thisBefore with flarestar.junit.composite.test.runners.ExampleTest@<address> [value = 4]
-in thatBefore with flarestar.junit.composite.test.runners.ExampleTest@<address> [value = 5]
+.in testSomethingElse with flarestar.junit.composite.test.runners.ExampleTestProxy@<address> [value = 4]
+in thisAfter with flarestar.junit.composite.test.runners.ExampleTestProxy@<address> [value = 4]
+in thisAfter with flarestar.junit.composite.test.runners.ExampleTestProxy@<address> [value = 4]
+in thisBefore with flarestar.junit.composite.test.runners.ExampleTestProxy@<address> [value = 4]
+in thatBefore with flarestar.junit.composite.test.runners.ExampleTestProxy@<address> [value = 5]
 in AnotherTestRunner.runChild
-in thisBefore with flarestar.junit.composite.test.runners.ExampleTest@<address> [value = 6]
-in thatBefore with flarestar.junit.composite.test.runners.ExampleTest@<address> [value = 7]
+in thisBefore with flarestar.junit.composite.test.runners.ExampleTestProxy@<address> [value = 6]
+in thatBefore with flarestar.junit.composite.test.runners.ExampleTestProxy@<address> [value = 7]
 in TestRunner.runChild
-.in testSomething with flarestar.junit.composite.test.runners.ExampleTest@<address> [value = 8]
-in thisAfter with flarestar.junit.composite.test.runners.ExampleTest@<address> [value = 8]
-in thisAfter with flarestar.junit.composite.test.runners.ExampleTest@<address> [value = 8]
-in thisBefore with flarestar.junit.composite.test.runners.ExampleTest@<address> [value = 8]
-in thatBefore with flarestar.junit.composite.test.runners.ExampleTest@<address> [value = 9]
+.in testSomething with flarestar.junit.composite.test.runners.ExampleTestProxy@<address> [value = 8]
+in thisAfter with flarestar.junit.composite.test.runners.ExampleTestProxy@<address> [value = 8]
+in thisAfter with flarestar.junit.composite.test.runners.ExampleTestProxy@<address> [value = 8]
+in thisBefore with flarestar.junit.composite.test.runners.ExampleTestProxy@<address> [value = 8]
+in thatBefore with flarestar.junit.composite.test.runners.ExampleTestProxy@<address> [value = 9]
 in AnotherTestRunner.runChild
-in thisBefore with flarestar.junit.composite.test.runners.ExampleTest@<address> [value = 10]
-in thatBefore with flarestar.junit.composite.test.runners.ExampleTest@<address> [value = 11]
+in thisBefore with flarestar.junit.composite.test.runners.ExampleTestProxy@<address> [value = 10]
+in thatBefore with flarestar.junit.composite.test.runners.ExampleTestProxy@<address> [value = 11]
 in TestRunner.runChild
-.in thisAfter with flarestar.junit.composite.test.runners.ExampleTest@<address> [value = 12]
-in thisAfter with flarestar.junit.composite.test.runners.ExampleTest@<address> [value = 12]
+.in thisAfter with flarestar.junit.composite.test.runners.ExampleTestProxy@<address> [value = 12]
+in thisAfter with flarestar.junit.composite.test.runners.ExampleTestProxy@<address> [value = 12]
 
 Time:
 

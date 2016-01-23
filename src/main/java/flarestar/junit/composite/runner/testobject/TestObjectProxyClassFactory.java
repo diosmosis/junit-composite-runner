@@ -34,24 +34,71 @@ public class TestObjectProxyClassFactory extends BaseClassExtender {
         CtClass newTestCtClass = pool.makeClass(proxyClassName, proxyCtClass);
         copyAnnotations(pool, testClass, newTestCtClass);
 
-        for (Method method : testClass.getDeclaredMethods()) {
-            if (Modifier.isStatic(method.getModifiers()) || !Modifier.isPublic(method.getModifiers())) {
-                continue;
-            }
-
-            String proxyBody = makeProxyMethodBody(method);
-            try {
-                newTestCtClass.addMethod(CtNewMethod.make(proxyBody, newTestCtClass));
-            } catch (CannotCompileException e) {
-                throw new RuntimeException(e);
-            }
-        }
-
         try {
+            newTestCtClass.addConstructor(makeCachingConstructor(newTestCtClass));
+
+            for (Method method : testClass.getDeclaredMethods()) {
+                if (Modifier.isStatic(method.getModifiers()) || !Modifier.isPublic(method.getModifiers())) {
+                    continue;
+                }
+
+                String superMethodBody = makeProxyMethodSuperBody(method);
+                newTestCtClass.addMethod(CtNewMethod.make(superMethodBody, newTestCtClass));
+
+                String proxyBody = makeProxyMethodBody(method);
+                newTestCtClass.addMethod(CtNewMethod.make(proxyBody, newTestCtClass));
+            }
+
             return newTestCtClass.toClass();
         } catch (CannotCompileException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private String makeProxyMethodSuperBody(Method method) {
+        StringBuilder builder = new StringBuilder();
+        builder.append("public ");
+        builder.append(method.getReturnType().getName());
+        builder.append(" ");
+        builder.append(method.getName());
+        builder.append("Super(");
+
+        Class<?>[] params = method.getParameterTypes();
+        appendMethodParameters(builder, params);
+
+        builder.append(") {\n");
+
+        builder.append("    ");
+        if (method.getReturnType() != Void.class) {
+            builder.append("return ");
+        }
+        builder.append("super.");
+        builder.append(method.getName());
+        builder.append("(");
+
+        for (int i = 0; i != params.length; ++i) {
+            if (i != 0) {
+                builder.append(", ");
+            }
+
+            builder.append("arg");
+            builder.append(i);
+        }
+
+        builder.append(");\n");
+
+        builder.append("}\n");
+
+        return builder.toString();
+    }
+
+    private CtConstructor makeCachingConstructor(CtClass declaringClass) throws CannotCompileException {
+        String constructorCode =
+            "public CustomRunner() {\n" +
+            "    super();\n" +
+            "    flarestar.junit.composite.runner.testobject.TestObjectInstanceContainer.setCurrentTestInstance(this);\n" +
+            "}\n";
+        return CtNewConstructor.make(constructorCode, declaringClass);
     }
 
     private String makeProxyMethodBody(Method method) {
@@ -63,20 +110,13 @@ public class TestObjectProxyClassFactory extends BaseClassExtender {
         builder.append("(");
 
         Class<?>[] params = method.getParameterTypes();
-        for (int i = 0; i != params.length; ++i) {
-            if (i != 0) {
-                builder.append(", ");
-            }
-
-            builder.append(params[i].getName());
-            builder.append(" arg");
-            builder.append(i);
-        }
+        appendMethodParameters(builder, params);
 
         builder.append(") {\n");
 
-        builder.append("    java.lang.reflect.Method __method = getClass().getSuperclass().getMethod(\"");
+        builder.append("    java.lang.reflect.Method __method = getClass().getMethod(\"");
         builder.append(method.getName());
+        builder.append("Super");
 
         if (params.length == 0) {
             builder.append("\", new Class[0]);\n");
@@ -116,6 +156,18 @@ public class TestObjectProxyClassFactory extends BaseClassExtender {
         builder.append("}\n");
 
         return builder.toString();
+    }
+
+    private void appendMethodParameters(StringBuilder builder, Class<?>[] params) {
+        for (int i = 0; i != params.length; ++i) {
+            if (i != 0) {
+                builder.append(", ");
+            }
+
+            builder.append(params[i].getName());
+            builder.append(" arg");
+            builder.append(i);
+        }
     }
 }
 

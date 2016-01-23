@@ -1,6 +1,7 @@
 package flarestar.junit.composite.runner;
 
 import flarestar.junit.composite.annotations.Runners;
+import flarestar.junit.composite.runner.chain.RunnerChainFactory;
 import flarestar.junit.composite.runner.chain.RunnerChainLinkFactory;
 import flarestar.junit.composite.runner.testobject.TestObjectInstanceContainer;
 import flarestar.junit.composite.runner.testobject.TestObjectProxyClassFactory;
@@ -51,9 +52,10 @@ import java.util.List;
  */
 public class CompositeRunner extends Runner {
 
-    private final RunnerChainLinkFactory factory = new RunnerChainLinkFactory();
+    private final RunnerChainFactory chainFactory = new RunnerChainFactory();
     private final TestObjectProxyClassFactory testObjectClassFactory = new TestObjectProxyClassFactory();
 
+    private final List<Class<? extends ParentRunner<?>>> runnerClasses;
     private final List<ParentRunner<?>> composedRunners;
     private Class<?> testClassUnprocessed;
     private Class<?> testClass;
@@ -68,8 +70,8 @@ public class CompositeRunner extends Runner {
 
         this.testClass = testObjectClassFactory.makeProxy(testClassUnprocessed);
 
-        List<Class<? extends ParentRunner<?>>> runnerClasses = getComposedRunnerClasses(annotation);
-        composedRunners = createRunnerChain(runnerClasses);
+        runnerClasses = getComposedRunnerClasses(annotation);
+        composedRunners = chainFactory.makeRunnerChain(testClass, this);
     }
 
     @Override
@@ -79,14 +81,10 @@ public class CompositeRunner extends Runner {
 
     @Override
     public void run(RunNotifier runNotifier) {
-        // we can't create a constructor in the proxy class that will set the instance,
-        // so we have to create an instance before the test actually starts
-        TestObjectInstanceContainer.setCurrentInstance(testClassUnprocessed);
-
         try {
             getStructureProvidingRunner().run(runNotifier);
         } finally {
-            TestObjectInstanceContainer.currentTestInstance = null;
+            TestObjectInstanceContainer.currentTestInstance.pop();
         }
     }
 
@@ -101,25 +99,7 @@ public class CompositeRunner extends Runner {
         return result;
     }
 
-    private List<ParentRunner<?>> createRunnerChain(List<Class<? extends ParentRunner<?>>> runnerClasses)
-            throws InitializationError {
-        List<ParentRunner<?>> runners = new ArrayList<ParentRunner<?>>(runnerClasses.size());
-        createRunnerChainLink(runners, runnerClasses.iterator(), true);
-        return runners;
-    }
-
-    private ParentRunner<?> createRunnerChainLink(List<ParentRunner<?>> runners,
-                                                  Iterator<Class<? extends ParentRunner<?>>> iterator,
-                                                  boolean isTestStructureProvider) throws InitializationError {
-        Class<? extends ParentRunner<?>> thisRunnerClass = iterator.next();
-
-        ParentRunner<?> nextRunner = null;
-        if (iterator.hasNext()) {
-            nextRunner = createRunnerChainLink(runners, iterator, false);
-        }
-
-        ParentRunner<?> runner = factory.makeLink(thisRunnerClass, testClass, this, nextRunner, isTestStructureProvider);
-        runners.add(0, runner);
-        return runner;
+    public List<Class<? extends ParentRunner<?>>> getRunnerClasses() {
+        return runnerClasses;
     }
 }
