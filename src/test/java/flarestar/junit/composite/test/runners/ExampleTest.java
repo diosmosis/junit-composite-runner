@@ -44,12 +44,14 @@ public class ExampleTest {
     }
 
     @Test
-    public void testAnnotationsRetained() {
-        RunWith annotation = getClass().getAnnotation(RunWith.class);
+    public void testAnnotationsRetained() throws Throwable {
+        Class<?> proxyClass = Class.forName(getClass().getName() + "Proxy");
+
+        RunWith annotation = proxyClass.getAnnotation(RunWith.class);
         Assert.assertNotNull(annotation);
         Assert.assertEquals(CompositeRunner.class, annotation.value());
 
-        Runners annotation2 = getClass().getAnnotation(Runners.class);
+        Runners annotation2 = proxyClass.getAnnotation(Runners.class);
         Assert.assertNotNull(annotation2);
         Assert.assertEquals(BlockJUnit4ClassRunner.class, annotation2.value());
         Assert.assertArrayEquals(new Class[] {AnotherTestRunner.class, TestRunner.class}, annotation2.others());

@@ -19,14 +19,14 @@ public abstract class BaseClassExtender {
 
     protected void copyAnnotations(ClassPool pool, Class<?> runnerClass, CtClass newRunnerCtClass) {
         ClassFile classFile = newRunnerCtClass.getClassFile();
-        for (Annotation annotation : runnerClass.getAnnotations()) {
-            classFile.addAttribute(makeAnnotationAttribute(pool, classFile.getConstPool(), annotation));
-        }
+        classFile.addAttribute(makeAnnotationAttribute(pool, classFile.getConstPool(), runnerClass));
     }
 
-    protected AnnotationsAttribute makeAnnotationAttribute(ClassPool classPool, ConstPool pool, Annotation annotation) {
+    protected AnnotationsAttribute makeAnnotationAttribute(ClassPool classPool, ConstPool pool, Class<?> klass) {
         AnnotationsAttribute result = new AnnotationsAttribute(pool, AnnotationsAttribute.visibleTag);
-        result.addAnnotation(makeBytecodeAnnotation(classPool, pool, annotation));
+        for (Annotation annotation : klass.getAnnotations()) {
+            result.addAnnotation(makeBytecodeAnnotation(classPool, pool, annotation));
+        }
         return result;
     }
 
@@ -35,11 +35,7 @@ public abstract class BaseClassExtender {
         javassist.bytecode.annotation.Annotation byteCodeAnnotation =
             new javassist.bytecode.annotation.Annotation(annotation.annotationType().getName(), pool);
 
-        for (Method method : annotation.annotationType().getMethods()) {
-            if (method.getDefaultValue() == null) {
-                continue;
-            }
-
+        for (Method method : annotation.annotationType().getDeclaredMethods()) {
             Object value;
             try {
                 value = method.invoke(annotation);
