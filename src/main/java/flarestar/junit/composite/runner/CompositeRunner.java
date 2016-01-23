@@ -54,9 +54,11 @@ public class CompositeRunner extends Runner {
     private final TestObjectProxyClassFactory testObjectClassFactory = new TestObjectProxyClassFactory();
 
     private final List<ParentRunner<?>> composedRunners;
+    private Class<?> testClassUnprocessed;
     private Class<?> testClass;
 
     public CompositeRunner(Class<?> testClassUnprocessed) throws InitializationError {
+        this.testClassUnprocessed = testClassUnprocessed;
         Runners annotation = testClassUnprocessed.getAnnotation(Runners.class);
         if (annotation == null) {
             throw new IllegalArgumentException(
@@ -78,7 +80,7 @@ public class CompositeRunner extends Runner {
     public void run(RunNotifier runNotifier) {
         // we can't create a constructor in the proxy class that will set the instance,
         // so we have to create an instance before the test actually starts
-        TestObjectInstanceContainer.setCurrentInstance(testClass);
+        TestObjectInstanceContainer.setCurrentInstance(testClassUnprocessed);
 
         try {
             getStructureProvidingRunner().run(runNotifier);

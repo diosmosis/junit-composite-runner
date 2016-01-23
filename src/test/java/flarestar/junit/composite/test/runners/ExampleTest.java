@@ -3,6 +3,7 @@ package flarestar.junit.composite.test.runners;
 import flarestar.junit.composite.annotations.Runners;
 import flarestar.junit.composite.runner.CompositeRunner;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,5 +41,17 @@ public class ExampleTest {
     @Test
     public void testSomethingElse() {
         System.out.println("in testSomethingElse with " + this.toString() + " [value = " + value + "]");
+    }
+
+    @Test
+    public void testAnnotationsRetained() {
+        RunWith annotation = getClass().getAnnotation(RunWith.class);
+        Assert.assertNotNull(annotation);
+        Assert.assertEquals(CompositeRunner.class, annotation.value());
+
+        Runners annotation2 = getClass().getAnnotation(Runners.class);
+        Assert.assertNotNull(annotation2);
+        Assert.assertEquals(BlockJUnit4ClassRunner.class, annotation2.value());
+        Assert.assertArrayEquals(new Class[] {AnotherTestRunner.class, TestRunner.class}, annotation2.others());
     }
 }
