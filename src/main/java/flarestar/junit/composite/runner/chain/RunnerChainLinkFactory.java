@@ -130,8 +130,11 @@ public class RunnerChainLinkFactory {
     private CtMethod makeRunChildMethod(CtClass newRunnerCtClass) throws CannotCompileException {
         String runChild =
             "    protected void runChild(Object child, org.junit.runner.notification.RunNotifier notifier) {\n" +
-            "        if (child.getClass() == org.junit.runners.model.FrameworkMethod.class && nextRunner != null) {\n" +
-            "            child = new flarestar.junit.composite.runner.chain.FrameworkMethodChainLink((org.junit.runners.model.FrameworkMethod)child, notifier, nextRunner);\n" +
+            "        if (nextRunner != null) {\n" +
+            "            if (child.getClass() == org.junit.runners.model.FrameworkMethod.class) {\n" +
+            "                child = new flarestar.junit.composite.runner.chain.FrameworkMethodChainLink((org.junit.runners.model.FrameworkMethod)child, notifier, nextRunner);\n" +
+            "            }\n" +
+            "            notifier = new flarestar.junit.composite.runner.notifier.NullRunNotifier(notifier);\n" +
             "        }\n" +
             "\n" +
             "        super.runChild(child, notifier);\n" +
